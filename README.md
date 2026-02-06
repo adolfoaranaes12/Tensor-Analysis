@@ -76,5 +76,7 @@ If your goal is to build intuition about the kinematics of fluid motion and the 
 
 ## References
 https://gemini.google.com/app/23e6e82426df81b3
+
 https://gemini.google.com/app/291179c21c83738f
+
 https://www.youtube.com/watch?v=YxXyN2ifK8A&list=PL2aHrV9pFqNTEMuDFre16Wx2SwBCNiR7j
