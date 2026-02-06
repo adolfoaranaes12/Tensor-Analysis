@@ -13,6 +13,7 @@ if project_root not in sys.path:
 
 from tensor_vis.fluids.velocity_field import VelocityField
 from tensor_vis.kinematics.jacobian import calculate_jacobian
+from tensor_vis.core.interp import bilinear_interpolate
 
 # --- 1. Define Non-Linear Velocity Field ---
 # We need a field with curvature (non-zero second derivatives) 
@@ -102,16 +103,9 @@ ax_linear.set_aspect('equal')
 ax_linear.grid(True, alpha=0.3)
 
 def get_data_at_pos(px, py):
-    # Helper to get V and J at position (nearest neighbor for stability)
-    dx = (bounds[0][1] - bounds[0][0]) / (shape[0] - 1)
-    dy = (bounds[1][1] - bounds[1][0]) / (shape[1] - 1)
-    idx_x = int((px - bounds[0][0]) / dx)
-    idx_y = int((py - bounds[1][0]) / dy)
-    idx_x = max(0, min(shape[0]-1, idx_x))
-    idx_y = max(0, min(shape[1]-1, idx_y))
-    
-    v0 = v_field.data[:, idx_x, idx_y]
-    J0 = J_field.data[:, :, idx_x, idx_y]
+    # Helper to get V and J at position (bilinear interpolation)
+    v0 = bilinear_interpolate(v_field.data, bounds, (px, py))
+    J0 = bilinear_interpolate(J_field.data, bounds, (px, py))
     return v0, J0
 
 def get_true_local_field(px, py):
@@ -121,16 +115,8 @@ def get_true_local_field(px, py):
         rx, ry = local_points[i]
         # Query global field at px+rx, py+ry
         qx, qy = px + rx, py + ry
-        
-        # Nearest neighbor query
-        dx = (bounds[0][1] - bounds[0][0]) / (shape[0] - 1)
-        dy = (bounds[1][1] - bounds[1][0]) / (shape[1] - 1)
-        idx_x = int((qx - bounds[0][0]) / dx)
-        idx_y = int((qy - bounds[1][0]) / dy)
-        idx_x = max(0, min(shape[0]-1, idx_x))
-        idx_y = max(0, min(shape[1]-1, idx_y))
-        
-        vecs.append(v_field.data[:, idx_x, idx_y])
+
+        vecs.append(bilinear_interpolate(v_field.data, bounds, (qx, qy)))
     return np.array(vecs).T # (2, N)
 
 def update(frame):

@@ -13,6 +13,7 @@ if project_root not in sys.path:
 
 from tensor_vis.fluids.velocity_field import VelocityField
 from tensor_vis.kinematics.jacobian import calculate_jacobian
+from tensor_vis.core.interp import bilinear_interpolate
 
 # --- Setup Data ---
 bounds = ((-2, 2), (-2, 2))
@@ -75,14 +76,8 @@ q_out_j = ax_local.quiver([0], [0], [0], [1], color='green', scale=1, scale_unit
 ax_local.legend(loc='upper right')
 
 def get_interpolated_J(px, py):
-    # Nearest neighbor
-    dx = 4.0 / (shape[0] - 1)
-    dy = 4.0 / (shape[1] - 1)
-    idx_x = int((px - bounds[0][0]) / dx)
-    idx_y = int((py - bounds[1][0]) / dy)
-    idx_x = max(0, min(shape[0]-1, idx_x))
-    idx_y = max(0, min(shape[1]-1, idx_y))
-    return J_field.data[:, :, idx_x, idx_y]
+    # Bilinear interpolation for smoother probe motion
+    return bilinear_interpolate(J_field.data, bounds, (px, py))
 
 def update(frame):
     px = path_x[frame % len(path_x)]

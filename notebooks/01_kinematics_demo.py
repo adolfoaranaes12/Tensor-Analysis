@@ -12,6 +12,7 @@ if project_root not in sys.path:
 
 from tensor_vis.fluids.velocity_field import VelocityField
 from tensor_vis.kinematics.jacobian import calculate_jacobian
+from tensor_vis.core.interp import bilinear_interpolate
 
 # --- 1. Define Velocity Field ---
 # v = (x^2 - y^2, 2xy)
@@ -98,14 +99,8 @@ q_Jdr = ax_local.quiver(dr_vecs[:, 0], dr_vecs[:, 1],
 ax_local.legend()
 
 def get_interpolated_J(px, py):
-    # Map to grid
-    dx = 4.0 / (shape[0] - 1)
-    dy = 4.0 / (shape[1] - 1)
-    idx_x = int((px - bounds[0][0]) / dx)
-    idx_y = int((py - bounds[1][0]) / dy)
-    idx_x = max(0, min(shape[0]-1, idx_x))
-    idx_y = max(0, min(shape[1]-1, idx_y))
-    return J_field.data[:, :, idx_x, idx_y] # (2, 2)
+    # Bilinear interpolation for smoother probe motion
+    return bilinear_interpolate(J_field.data, bounds, (px, py))  # (2, 2)
 
 def update(frame):
     if frame >= len(trajectory):

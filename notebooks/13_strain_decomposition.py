@@ -74,35 +74,124 @@ dr = points.T # (2, N)
 # dv = Matrix @ dr
 dv_total = L @ dr        # Total Gradient Field
 dv_rot = W @ dr          # Rotation Field
+dv_strain = D @ dr       # Total symmetric strain (vol + dev)
 dv_vol = Volumetric @ dr # Expansion Field
 dv_dev = Deviatoric @ dr # Shear Field
 
 # --- 4. Visualization ---
-fig = plt.figure(figsize=(16, 6))
-fig.suptitle(r"Strain Rate Decomposition: $\mathbf{L} = \mathbf{W} + \mathbf{D}_{vol} + \mathbf{D}_{dev}$" + "\nVisualizing the Matrix components as Vector Fields", fontsize=16)
+fig = plt.figure(figsize=(18, 9))
+fig.suptitle(
+    r"Velocity Gradient Decomposition: $\mathbf{L} = \mathbf{W} + \mathbf{D}$"
+    + "\n"
+    + r"with $\mathbf{D} = \mathbf{D}_{vol} + \mathbf{D}_{dev}$ (symmetric strain)",
+    fontsize=16
+)
 
-gs = gridspec.GridSpec(1, 4)
+gs = gridspec.GridSpec(2, 3)
 
 # 1. Total Field
-ax1 = fig.add_subplot(gs[0])
-plot_vector_field(ax1, dv_total.T, 'black', r"1. Total Gradient $\mathbf{L}$" + "\n(The Full Transformation)", "Total")
+ax1 = fig.add_subplot(gs[0, 0])
+plot_vector_field(
+    ax1,
+    dv_total.T,
+    'black',
+    r"1. Total Gradient $\mathbf{L}$" + "\n(The Full Transformation)",
+    "Total"
+)
 
 # 2. Rotation
-ax2 = fig.add_subplot(gs[1])
-plot_vector_field(ax2, dv_rot.T, 'blue', r"2. Rotation $\mathbf{W}$" + "\n(Antisymmetric Part)", "Spin")
+ax2 = fig.add_subplot(gs[0, 1])
+plot_vector_field(
+    ax2,
+    dv_rot.T,
+    'blue',
+    r"2. Rotation $\mathbf{W}$" + "\n(Antisymmetric Part)",
+    "Spin"
+)
 
-# 3. Volumetric
-ax3 = fig.add_subplot(gs[2])
-plot_vector_field(ax3, dv_vol.T, 'green', r"3. Volumetric Strain" + "\n(Spherical Part of D)", "Expansion")
+# 3. Symmetric Strain (Vol + Dev)
+ax3 = fig.add_subplot(gs[0, 2])
+plot_vector_field(
+    ax3,
+    dv_strain.T,
+    'purple',
+    r"3. Symmetric Strain $\mathbf{D}$" + "\n($\mathbf{D}_{vol} + \mathbf{D}_{dev}$)",
+    "Strain"
+)
 
-# 4. Deviatoric
-ax4 = fig.add_subplot(gs[3])
-plot_vector_field(ax4, dv_dev.T, 'red', r"4. Deviatoric Strain" + "\n(Shear Part of D)", "Distortion")
+# 4. Volumetric
+ax4 = fig.add_subplot(gs[1, 0])
+plot_vector_field(
+    ax4,
+    dv_vol.T,
+    'green',
+    r"4. Volumetric Strain $\mathbf{D}_{vol}$" + "\n(Spherical Part of D)",
+    "Expansion"
+)
 
-# Add 'Plus' and 'Equals' signs visually
-fig.text(0.30, 0.5, "=", fontsize=30, ha='center', va='center')
-fig.text(0.51, 0.5, "+", fontsize=30, ha='center', va='center')
-fig.text(0.73, 0.5, "+", fontsize=30, ha='center', va='center')
+# 5. Deviatoric
+ax5 = fig.add_subplot(gs[1, 1])
+plot_vector_field(
+    ax5,
+    dv_dev.T,
+    'red',
+    r"5. Deviatoric Strain $\mathbf{D}_{dev}$" + "\n(Shear Part of D)",
+    "Distortion"
+)
+
+# 6. Text panel (summary)
+ax6 = fig.add_subplot(gs[1, 2])
+ax6.axis('off')
+ax6.text(
+    0.0,
+    0.8,
+    r"$\mathbf{L} = \mathbf{W} + \mathbf{D}$",
+    fontsize=14
+)
+ax6.text(
+    0.0,
+    0.6,
+    r"$\mathbf{D} = \mathbf{D}_{vol} + \mathbf{D}_{dev}$",
+    fontsize=14
+)
+ax6.text(
+    0.0,
+    0.4,
+    r"$\mathbf{D}_{vol} = \frac{1}{d}\,\mathrm{tr}(\mathbf{D})\,\mathbf{I}$",
+    fontsize=14
+)
+ax6.text(
+    0.0,
+    0.2,
+    r"$\mathbf{D}_{dev} = \mathbf{D} - \mathbf{D}_{vol}$",
+    fontsize=14
+)
 
 plt.tight_layout(rect=[0, 0.05, 1, 0.9])
+fig.text(
+    0.5,
+    0.02,
+    r"Note: Strain rate is $\mathbf{D}=\mathbf{D}_{vol}+\mathbf{D}_{dev}$ (symmetric)."
+    r" Rotation is isolated in $\mathbf{W}$ (antisymmetric).",
+    ha='center',
+    fontsize=10
+)
+fig.text(
+    0.5,
+    0.0,
+    r"Math note: For $A = I + \mathbf{J}\Delta t$, "
+    r"$\det(A) \approx 1 + \mathrm{tr}(\mathbf{J})\Delta t$. "
+    r"So $\mathrm{tr}(\mathbf{D})$ is the instantaneous volume-change rate.",
+    ha='center',
+    fontsize=9
+)
+fig.text(
+    0.5,
+    -0.02,
+    r"Why $D$? For any $J$, the unique split $J=D+W$ with $D^T=D$ and $W^T=-W$ "
+    r"makes $d/dt\,|dr|^2 = 2\,dr^T D\,dr$ (since $dr^T W dr = 0$). "
+    r"So only $D$ changes lengths/angles.",
+    ha='center',
+    fontsize=9
+)
 plt.show()
