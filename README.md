@@ -80,3 +80,5 @@ https://gemini.google.com/app/23e6e82426df81b3
 https://gemini.google.com/app/291179c21c83738f
 
 https://www.youtube.com/watch?v=YxXyN2ifK8A&list=PL2aHrV9pFqNTEMuDFre16Wx2SwBCNiR7j
+
+https://youtu.be/k2FP-T6S1x0?si=ac42tHwVomP5EDva
